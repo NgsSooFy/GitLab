@@ -4,7 +4,7 @@ import datetime
 
 class CjrbSpider(scrapy.Spider):
     name = "cjrb"
-
+    
     def start_requests(self):
         today = datetime.date.today()
         year = str(today.year)
@@ -31,4 +31,16 @@ class CjrbSpider(scrapy.Spider):
             yield scrapy.Request(url=article_url,callback=self.parse_article)
 
     def parse_article(self,response):
-        pass
+        main_title = response.css('td[class=bt1]::text').extract()[0]
+        vice_title = ""
+        for text in response.css('td[class=bt2]::text').extract():
+            if text != "":
+                vice_title = text
+                break
+        article = response.css('td[class=xilan_content_tt]::text').extract()[0]
+        st = response.css('td[class=domain] span[class=bt3]::text').extract()[0]
+        sheet = st[2:][:-3].strip()
+        date = str(datetime.date.today()).replace('-','')
+        result = { "Main_title":main_title , 'Second_title':vice_title , 'Date':date , 'Sheet':sheet , 'Article':article }
+        yield result
+                  
