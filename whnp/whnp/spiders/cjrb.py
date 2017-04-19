@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import datetime
+import re
 
 class CjrbSpider(scrapy.Spider):
     name = "cjrb"
@@ -37,10 +38,23 @@ class CjrbSpider(scrapy.Spider):
             if text != "":
                 vice_title = text
                 break
-        article = response.css('td[class=xilan_content_tt]::text').extract()[0]
+        article =""
+        for p in response.css('td[class=xilan_content_tt] P::text').extract():
+            article = article + p.replace('\xa0','').strip()+'\n'
+        #print(article)
         st = response.css('td[class=domain] span[class=bt3]::text').extract()[0]
         sheet = st[2:][:-3].strip()
+
+        sheet_num = '0';
+        for td in response.css('td[class=main]::text').extract():
+            try:
+                if(td.index("版次")!= -1):
+                    sheet_num = re.sub("\D","",td)
+                    break
+            except:
+                continue
+        
         date = str(datetime.date.today()).replace('-','')
-        result = { "Main_title":main_title , 'Second_title':vice_title , 'Date':date , 'Sheet':sheet , 'Article':article }
+        result = { "Main_title":main_title , 'Second_title':vice_title , 'Date':date , 'Sheet':sheet ,'Sheet_number':sheet_num , 'Article':article }
         yield result
                   
