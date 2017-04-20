@@ -22,13 +22,15 @@ class CjrbSpider(scrapy.Spider):
         home = origin_url[0:origin_url.index('node')]
         for href in response.css('a[class=black]::attr(href)').extract():
             page_url = home + href.replace('./', '')
-            yield scrapy.Request(url=page_url,callback=self.parse_page)
+            print("版面连接列表:"+page_url)
+            yield scrapy.Request(url=page_url,dont_filter=True,callback=self.parse_page)
 
     def parse_page(self,response):
         origin_url = response.url
         home = origin_url[0:origin_url.index('node')]
         for href in response.css('td[class=black] a[href*=content]::attr(href)').extract():
             article_url = home + href
+            print("文章链接列表:"+article_url)
             yield scrapy.Request(url=article_url,callback=self.parse_article)
 
     def parse_article(self,response):
